@@ -1,0 +1,18 @@
+{
+  "name": "lazy-load-react",
+  "version": "1.0.0",
+  "description": "lazy load react component",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoV5/lazyme.git"
+  },
+  "author": "JoV5",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JoV5/lazyme/issues"
+  },
+  "homepage": "https://github.com/JoV5/lazyme"
+}
