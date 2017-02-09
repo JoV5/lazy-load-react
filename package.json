@@ -1,9 +1,10 @@
 {
   "name": "lazy-load-react",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "lazy load react component",
-  "main": "index.js",
+  "main": "./dist/lazy-load-react.js",
   "scripts": {
+    "build": "babel ./src/index.js --out-file ./dist/lazy-load-react.js"
   },
   "repository": {
     "type": "git",
@@ -14,5 +15,19 @@
   "bugs": {
     "url": "https://github.com/JoV5/lazyme/issues"
   },
-  "homepage": "https://github.com/JoV5/lazyme"
+  "homepage": "https://github.com/JoV5/lazyme",
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-react": "^6.22.0",
+    "babel-preset-stage-0": "^6.22.0"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react",
+      "stage-0"
+    ]
+  }
 }
