@@ -3,7 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.lazymeF = exports.lazyme = exports.importLazy = undefined;
+exports.lazyme = exports.importLazy = exports.LazilyLoadFactory = exports.LazilyLoad = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -17,15 +19,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * https://doc.webpack-china.org/guides/lazy-load-react/
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 
-var ImLazy = function (_React$Component) {
-  _inherits(ImLazy, _React$Component);
 
-  function ImLazy() {
-    _classCallCheck(this, ImLazy);
+var LazilyLoad = exports.LazilyLoad = function (_React$Component) {
+  _inherits(LazilyLoad, _React$Component);
 
-    var _this = _possibleConstructorReturn(this, (ImLazy.__proto__ || Object.getPrototypeOf(ImLazy)).apply(this, arguments));
+  function LazilyLoad() {
+    _classCallCheck(this, LazilyLoad);
+
+    var _this = _possibleConstructorReturn(this, (LazilyLoad.__proto__ || Object.getPrototypeOf(LazilyLoad)).apply(this, arguments));
 
     _this.state = {
       isLoaded: false
@@ -33,7 +38,7 @@ var ImLazy = function (_React$Component) {
     return _this;
   }
 
-  _createClass(ImLazy, [{
+  _createClass(LazilyLoad, [{
     key: 'componentWillMount',
     value: function componentWillMount() {
       this.load(this.props);
@@ -46,7 +51,7 @@ var ImLazy = function (_React$Component) {
   }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(next) {
-      if (next.module === this.props.module) return null;
+      if (next.modules === this.props.modules) return null;
       this.load(next);
     }
   }, {
@@ -63,24 +68,48 @@ var ImLazy = function (_React$Component) {
         isLoaded: false
       });
 
-      var module = props.module;
+      var modules = props.modules;
 
+      var keys = Object.keys(modules);
 
-      module().then(function (result) {
+      Promise.all(keys.map(function (key) {
+        return modules[key]();
+      })).then(function (values) {
+        return keys.reduce(function (agg, key, index) {
+          agg[key] = values[index];
+          return agg;
+        }, {});
+      }).then(function (result) {
         if (!_this2._isMounted) return null;
-        _this2.setState({ module: result, isLoaded: true });
+        _this2.setState({ modules: result, isLoaded: true });
       });
     }
   }, {
     key: 'render',
     value: function render() {
       if (!this.state.isLoaded) return null;
-      return _react2.default.createElement(this.state.module, null);
+      return _react2.default.Children.only(this.props.children(this.state.modules));
     }
   }]);
 
-  return ImLazy;
+  return LazilyLoad;
 }(_react2.default.Component);
+
+LazilyLoad.propTypes = {
+  children: _react2.default.PropTypes.func.isRequired
+};
+
+var LazilyLoadFactory = exports.LazilyLoadFactory = function LazilyLoadFactory(Component, modules) {
+  return function (props) {
+    return _react2.default.createElement(
+      LazilyLoad,
+      { modules: modules },
+      function (mods) {
+        return _react2.default.createElement(Component, _extends({}, mods, props));
+      }
+    );
+  };
+};
 
 var importLazy = exports.importLazy = function importLazy(promise) {
   return promise.then(function (result) {
@@ -89,16 +118,19 @@ var importLazy = exports.importLazy = function importLazy(promise) {
 };
 
 var lazyme = exports.lazyme = function lazyme(getModule) {
-  return _react2.default.createElement(ImLazy, { module: function module() {
-      return importLazy(getModule());
-    } });
-};
-
-var lazymeF = exports.lazymeF = function lazymeF(getModule) {
   return function () {
-    return _react2.default.createElement(ImLazy, { module: function module() {
-        return importLazy(getModule());
-      } });
+    return _react2.default.createElement(
+      LazilyLoad,
+      { modules: {
+          Me: function Me() {
+            return importLazy(getModule());
+          }
+        } },
+      function (_ref) {
+        var Me = _ref.Me;
+        return _react2.default.createElement(Me, null);
+      }
+    );
   };
 };
 

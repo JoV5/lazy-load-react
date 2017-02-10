@@ -1,6 +1,9 @@
+/**
+ * https://doc.webpack-china.org/guides/lazy-load-react/
+ */
 import React from 'react';
 
-class ImLazy extends React.Component {
+export class LazilyLoad extends React.Component {
 
   constructor() {
     super(...arguments);
@@ -18,7 +21,7 @@ class ImLazy extends React.Component {
   }
 
   componentWillReceiveProps(next) {
-    if (next.module === this.props.module) return null;
+    if (next.modules === this.props.modules) return null;
     this.load(next);
   }
 
@@ -31,25 +34,47 @@ class ImLazy extends React.Component {
       isLoaded: false,
     });
 
-    const {module} = props;
+    const { modules } = props;
+    const keys = Object.keys(modules);
 
-    module().then((result) => {
-      if (!this._isMounted) return null;
-      this.setState({module: result, isLoaded: true});
-    });
+    Promise.all(keys.map((key) => modules[key]()))
+      .then((values) => (keys.reduce((agg, key, index) => {
+        agg[key] = values[index];
+        return agg;
+      }, {})))
+      .then((result) => {
+        if (!this._isMounted) return null;
+        this.setState({ modules: result, isLoaded: true });
+      });
   }
 
   render() {
     if (!this.state.isLoaded) return null;
-    return <this.state.module />;
+    return React.Children.only(this.props.children(this.state.modules));
   }
 }
 
-export const importLazy = (promise) =>
-  promise.then((result) => result.default);
+LazilyLoad.propTypes = {
+  children: React.PropTypes.func.isRequired,
+};
 
-export const lazyme = (getModule) => <ImLazy module={() => importLazy(getModule())}/>;
+export const LazilyLoadFactory = (Component, modules) => {
+  return (props) => (
+    <LazilyLoad modules={modules}>
+      {(mods) => <Component {...mods} {...props} />}
+    </LazilyLoad>
+  );
+};
 
-export const lazymeF = (getModule) => () => <ImLazy module={() => importLazy(getModule())}/>;
+export const importLazy = (promise) => (
+  promise.then((result) => result.default)
+);
+
+export const lazyme = (getModule) => () =>
+  <LazilyLoad modules={{
+    Me: () => importLazy(getModule())
+  }}>
+    {({Me}) => <Me/>}
+  </LazilyLoad>;
 
 export default lazyme;
