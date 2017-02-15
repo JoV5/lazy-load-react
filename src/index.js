@@ -70,11 +70,11 @@ export const importLazy = (promise) => (
   promise.then((result) => result.default)
 );
 
-export const lazyme = (getModule) => () =>
+export const lazyme = (getModule) => (props) =>
   <LazilyLoad modules={{
-    Me: () => importLazy(getModule())
+    Module: () => importLazy(getModule())
   }}>
-    {({Me}) => <Me/>}
+    {({Module}) => <Module {...props}/>}
   </LazilyLoad>;
 
 export default lazyme;

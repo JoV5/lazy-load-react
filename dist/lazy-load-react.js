@@ -118,17 +118,17 @@ var importLazy = exports.importLazy = function importLazy(promise) {
 };
 
 var lazyme = exports.lazyme = function lazyme(getModule) {
-  return function () {
+  return function (props) {
     return _react2.default.createElement(
       LazilyLoad,
       { modules: {
-          Me: function Me() {
+          Module: function Module() {
             return importLazy(getModule());
           }
         } },
       function (_ref) {
-        var Me = _ref.Me;
-        return _react2.default.createElement(Me, null);
+        var Module = _ref.Module;
+        return _react2.default.createElement(Module, props);
       }
     );
   };
