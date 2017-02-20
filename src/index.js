@@ -34,7 +34,7 @@ export class LazilyLoad extends React.Component {
       isLoaded: false,
     });
 
-    const { modules } = props;
+    const {modules} = props;
     const keys = Object.keys(modules);
 
     Promise.all(keys.map((key) => modules[key]()))
@@ -44,7 +44,7 @@ export class LazilyLoad extends React.Component {
       }, {})))
       .then((result) => {
         if (!this._isMounted) return null;
-        this.setState({ modules: result, isLoaded: true });
+        this.setState({modules: result, isLoaded: true});
       });
   }
 
@@ -70,11 +70,46 @@ export const importLazy = (promise) => (
   promise.then((result) => result.default)
 );
 
-export const lazyme = (getModule) => (props) =>
-  <LazilyLoad modules={{
-    Module: () => importLazy(getModule())
-  }}>
-    {({Module}) => <Module {...props}/>}
-  </LazilyLoad>;
+/*export const lazyme = (getModule) => (props) =>
+ <LazilyLoad modules={{
+ Module: () => importLazy(getModule())
+ }}>
+ {({Module}) => <Module {...props}/>}
+ </LazilyLoad>;*/
+
+export const lazyme = (getModule) => {
+
+  return class LazyComponent extends React.Component {
+
+    state = {
+      Module: undefined
+    };
+
+    componentWillMount() {
+      this.load();
+    }
+
+    componentDidMount() {
+      this._isMounted = true;
+    }
+
+    componentWillUnmount() {
+      this._isMounted = false;
+    }
+
+    load() {
+      getModule().then((result) => {
+        if (!this._isMounted) return null;
+        this.setState({Module: result.default});
+      });
+    }
+
+    render() {
+      const {Module} = this.state;
+      if (!Module) return null;
+      return <Module {...this.props}/>;
+    }
+  }
+};
 
 export default lazyme;

@@ -117,21 +117,71 @@ var importLazy = exports.importLazy = function importLazy(promise) {
   });
 };
 
+/*export const lazyme = (getModule) => (props) =>
+ <LazilyLoad modules={{
+ Module: () => importLazy(getModule())
+ }}>
+ {({Module}) => <Module {...props}/>}
+ </LazilyLoad>;*/
+
 var lazyme = exports.lazyme = function lazyme(getModule) {
-  return function (props) {
-    return _react2.default.createElement(
-      LazilyLoad,
-      { modules: {
-          Module: function Module() {
-            return importLazy(getModule());
-          }
-        } },
-      function (_ref) {
-        var Module = _ref.Module;
-        return _react2.default.createElement(Module, props);
+
+  return function (_React$Component2) {
+    _inherits(LazyComponent, _React$Component2);
+
+    function LazyComponent() {
+      var _ref;
+
+      var _temp, _this3, _ret;
+
+      _classCallCheck(this, LazyComponent);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
       }
-    );
-  };
+
+      return _ret = (_temp = (_this3 = _possibleConstructorReturn(this, (_ref = LazyComponent.__proto__ || Object.getPrototypeOf(LazyComponent)).call.apply(_ref, [this].concat(args))), _this3), _this3.state = {
+        Module: undefined
+      }, _temp), _possibleConstructorReturn(_this3, _ret);
+    }
+
+    _createClass(LazyComponent, [{
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+        this.load();
+      }
+    }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+        this._isMounted = true;
+      }
+    }, {
+      key: 'componentWillUnmount',
+      value: function componentWillUnmount() {
+        this._isMounted = false;
+      }
+    }, {
+      key: 'load',
+      value: function load() {
+        var _this4 = this;
+
+        getModule().then(function (result) {
+          if (!_this4._isMounted) return null;
+          _this4.setState({ Module: result.default });
+        });
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var Module = this.state.Module;
+
+        if (!Module) return null;
+        return _react2.default.createElement(Module, this.props);
+      }
+    }]);
+
+    return LazyComponent;
+  }(_react2.default.Component);
 };
 
 exports.default = lazyme;
