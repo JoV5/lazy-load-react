@@ -1,6 +1,6 @@
 {
   "name": "lazy-load-react",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "lazy load react component",
   "main": "./dist/lazy-load-react.js",
   "scripts": {
