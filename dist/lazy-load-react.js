@@ -70,7 +70,12 @@ var lazyme = exports.lazyme = function lazyme(getModule) {
 
         getModule().then(function (result) {
           if (!_this2._isMounted) return null;
-          _this2.setState({ Module: result.default });
+
+          result = result.default || result;
+
+          if (_this2.state.Module != result) {
+            _this2.setState({ Module: result });
+          }
         });
       }
     }, {

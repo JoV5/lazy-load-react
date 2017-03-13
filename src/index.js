@@ -30,7 +30,12 @@ export const lazyme = (getModule) => {
     load() {
       getModule().then((result) => {
         if (!this._isMounted) return null;
-        this.setState({Module: result.default});
+
+        result = result.default || result;
+
+        if (this.state.Module != result) {
+          this.setState({Module: result});
+        }
       });
     }
 
