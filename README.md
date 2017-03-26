@@ -1,4 +1,8 @@
-npm install lazy-load-react
+Preconditions：
+1. use webpack2
+2. support Promise
+
+`npm install lazy-load-react`  
 
 ```js
 import lazyme from 'lazy-load-react';
@@ -9,4 +13,7 @@ const HomePage = lazyme(() => System.import('./HomePage'));
 ```
 
 
-[example](https://github.com/JoV5/react-starter/tree/master/src/react-router)
+some examples：
+[`react-router App`](https://github.com/JoV5/react-starter/blob/master/src/react-router/containers/App.js)
+
+[`react-cnode App`](https://github.com/JoV5/react-cnode/blob/master/src/containers/App/index.js)。
